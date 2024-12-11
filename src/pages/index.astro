@@ -3,54 +3,97 @@ import Layout from '../components/layout.astro';
 ---
 
 <style>
-.steps {
-  background: var(--light);
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: min(90vw, 250px);
-  justify-content: center;
-  margin-top: 3rem;
-  padding: 5rem 5vw;
-  width: 100vw;
-}
-
-@media (min-width: 550px) {
   .steps {
-    grid-template-columns: repeat(2, min(calc(50% - 1rem), 250px));
+    background: var(--light);
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(5, 100px); /* Adjust based on grid size */
+    justify-content: center;
+    margin-top: 3rem;
+    padding: 5rem 5vw;
+    width: 100vw;
   }
-}
-
-@media (min-width: 1050px) {
-  .steps {
-    grid-template-columns: repeat(4, min(calc(25% - 1.5rem), 250px));
+  
+  .step {
+    position: relative;
+    width: 100px;
+    height: 90px;
+    background-color: var(--white);
+    border: 1px solid var(--lightBorder);
+    border-radius: var(--card-radius);
+    margin: auto;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   }
-}
-
-.step {
-  background: var(--white);
-  border: 1px solid var(--lightBorder);
-  border-radius: var(--card-radius);
-  display: flex;
-  flex-direction: column;
-  font-size: 0.75rem;
-  padding: 1rem 1.5rem 1.5rem;
-  text-align: left;
-  box-shadow: 0 2px 4px rgb(14 30 37 / 12%);
-}
-
-.stepHeading {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0;
-}
-</style>
+  
+  .step:hover {
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgb(14 30 37 / 12%);
+  }
+  </style>
 
 <Layout
-  title="Netlify Feature Tour"
-  description="This is a small site to show the most powerful features of Netlify quickly!"
+  title="City Building Game"
+  description="Build and manage your city on a hex grid."
   home
 >
-  <main class="steps">
-
-  </main>
+  <main class="steps"></main>
 </Layout>
+
+<script>
+  // Constants
+  const GRID_SIZE = 5; // Size of the grid (5x5)
+  const HEX_SIZE = 100; // Size of each hex in pixels
+
+  // Game state
+  let player = {
+    armyLimit: 3,
+    currentArmy: 0,
+    features: [],
+  };
+
+  // Feature types
+  const FEATURES = {
+    DEFENSIVE: { name: 'Defensive Structure', defenseBonus: 1 },
+    ECONOMIC: { name: 'Economic Building', armyLimitIncrease: 1 },
+    MILITARY: { name: 'Military Base', armyStrengthBonus: 1, armyLimitDecrease: 1 },
+  };
+
+  // Initialize the game board
+  function createGameBoard() {
+    const gameBoard = document.querySelector('.steps');
+    for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+      const hex = document.createElement('div');
+      hex.classList.add('step');
+      hex.dataset.x = Math.floor(i / GRID_SIZE);
+      hex.dataset.y = i % GRID_SIZE;
+      hex.addEventListener('click', handleHexClick);
+      gameBoard.appendChild(hex);
+    }
+  }
+
+  // Handle hexagon click
+  function handleHexClick(event) {
+    const hex = event.target;
+    console.log(`Hex clicked at (${hex.dataset.x}, ${hex.dataset.y})`);
+
+    // Example action: build a defensive structure
+    buildFeature(hex, 'DEFENSIVE');
+  }
+
+  // Function to build a feature on a hex
+  function buildFeature(hex, featureType) {
+    if (!hex.dataset.feature) {
+      hex.dataset.feature = featureType;
+      hex.classList.add('feature');
+      player.features.push({ type: featureType, position: { x: hex.dataset.x, y: hex.dataset.y } });
+      hex.innerHTML = `<p>${FEATURES[featureType].name}</p>`;
+    } else {
+      alert("Cannot build here.");
+    }
+  }
+
+  // Start the game
+  window.onload = function() {
+    createGameBoard();
+  };
+</script>
