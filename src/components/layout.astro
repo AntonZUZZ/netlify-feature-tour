@@ -1,6 +1,7 @@
 ---
 const { title, description, home = false } = Astro.props;
 ---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +10,7 @@ const { title, description, home = false } = Astro.props;
   <link rel="preload" href="/fonts/PacaembuVar-subset.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/MulishVar-subset.woff2" as="font" type="font/woff2" crossorigin>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -21,23 +22,20 @@ const { title, description, home = false } = Astro.props;
 
   <link rel="stylesheet" href="/global.css">
   <style is:global>
-
     :root {
-    
       --heading: var(--neutral-dark-900);
       --text: var(--neutral-dark-900);
       --text-muted: var(--neutral-dark-600);
       --primary: var(--blue-700);
       --primary-darker: var(--blue-800);
       --highlight: var(--teal-300);
-      --button:var(--neutral-light-000);
+      --button: var(--neutral-light-000);
       --lightBorder: var(--neutral-light-200);
       --light: var(--neutral-light-100);
       --white: var(--neutral-light-000);
       --card-radius: var(--border-radius-3);
       --font-primary: Pacaembu, sans-serif;
       --font-secondary: Mulish, sans-serif;
-
     }
 
     * {
@@ -46,7 +44,6 @@ const { title, description, home = false } = Astro.props;
 
     html,
     body {
-
       color: var(--text);
       font-family: var(--font-secondary);
       font-size: 18px;
@@ -120,7 +117,6 @@ const { title, description, home = false } = Astro.props;
       background: var(--primary-darker);
     }
 
-
     .container,
     .footer {
       margin: 0 auto;
@@ -178,9 +174,7 @@ const { title, description, home = false } = Astro.props;
 <body>
   <header class="container">
     <h1 class="heading">{title}</h1>
-
     <p class="description">{description}</p>
-
     {home !== true && (
       <p>
         <a href="/">&larr; back to home</a>

@@ -1,5 +1,18 @@
 ---
 import Layout from '../components/layout.astro';
+
+/* 
+Пример структуры данных игры (можно перенести в отдельный скрипт):
+Далее вы можете использовать JS для рендера состояния.
+Пример: 
+const gridState = [
+  { type: 'start', armies: [{power: 1}], features: ['economic', 'defensive', 'military'] },
+  { type: 'empty', armies: [], features: [] },
+  ...
+];
+
+В дальнейшем можно динамически генерировать HTML или использовать реактивные фреймворки.
+*/
 ---
 
 <style>
@@ -10,107 +23,97 @@ import Layout from '../components/layout.astro';
     --card-radius: 8px;
   }
 
-  .steps {
-    background: var(--light);
+  .hex-grid {
     display: grid;
-    gap: 2rem;
-    grid-template-columns: repeat(5, 100px); /* Adjust based on grid size */
+    /* Ширину и количество можно настроить под реальный размер карты */
+    grid-template-columns: repeat(5, 60px);
+    gap: 5px;
     justify-content: center;
+    background: var(--light);
     margin-top: 3rem;
     padding: 5rem 5vw;
     width: 100vw;
     overflow: visible;
   }
 
-  .step {
+  .hex {
     position: relative;
-    width: 100px;
-    height: 90px;
+    width: 60px;
+    height: 52px;
     background-color: var(--white);
     border: 1px solid var(--lightBorder);
-    border-radius: var(--card-radius);
-    margin: auto;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    clip-path: polygon(
+      50% 0%,
+      100% 25%,
+      100% 75%,
+      50% 100%,
+      0% 75%,
+      0% 25%
+    );
+    transition: box-shadow 0.2s ease;
   }
 
-  .step:hover {
+  /* Пример состояния стартового гекса:
+     Отличается цветом или рамкой, так как там сразу все три особенности */
+  .hex.start {
+    background-color: #c0e8ff; /* условный цвет для стартовой клетки */
+    border: 2px solid #0077cc;
+  }
+
+  .hex:hover {
     cursor: pointer;
     box-shadow: 0 2px 4px rgb(14 30 37 / 12%);
   }
-  </style>
+
+  /* Можно добавить индикаторы особенностей и армий внутри гекса, 
+     например, через pseudo-элементы или вложенные span */
+  .hex .army {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .hex.economic {
+    /* например, зеленоватый оттенок */
+    background-color: #d8ffd8;
+  }
+
+  .hex.defensive {
+    /* например, сероватый оттенок */
+    background-color: #f0f0f0;
+  }
+
+  .hex.military {
+    /* например, розоватый оттенок */
+    background-color: #ffd8d8;
+  }
+
+</style>
 
 <Layout
   title="City Building Game"
-  description="Build and manage your city on a hex grid."
+  description="Управляйте городом на гексагональной сетке. Создавайте особенности, армии и расширяйтесь."
   home
 >
-  <main class="steps" client:only ></main>
+  <!-- Тут вы можете динамически генерировать гексы на основе состояния -->
+  <main class="hex-grid" client:only>
+    <!-- Пример статической раскладки для демонстрации -->
+    <div class="hex start">
+      <div class="army">A:1</div>
+    </div>
+    <div class="hex economic"></div>
+    <div class="hex defensive"></div>
+    <div class="hex military"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <!-- И так далее... Можно сгенерировать нужный размер карты -->
+  </main>
 </Layout>
-
-<script>
-  import { onMount } from 'astro/runtime/client';
-
-  console.log('Script is running');
-
-  onMount(() => {
-    console.log('onMount is called');
-    createGameBoard();
-  });
-
-  // Constants
-  const GRID_SIZE = 5; // Size of the grid (5x5)
-  const HEX_SIZE = 100; // Size of each hex in pixels
-
-  // Game state
-  let player = {
-    armyLimit: 3,
-    currentArmy: 0,
-    features: [],
-  };
-
-  // Feature types
-  const FEATURES = {
-    DEFENSIVE: { name: 'Defensive Structure', defenseBonus: 1 },
-    ECONOMIC: { name: 'Economic Building', armyLimitIncrease: 1 },
-    MILITARY: { name: 'Military Base', armyStrengthBonus: 1, armyLimitDecrease: 1 },
-  };
-
-  // Initialize the game board
-  function createGameBoard() {
-    const gameBoard = document.querySelector('.steps');
-    for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-      const hex = document.createElement('div');
-      hex.classList.add('step');
-      hex.dataset.x = Math.floor(i / GRID_SIZE);
-      hex.dataset.y = i % GRID_SIZE;
-      hex.addEventListener('click', handleHexClick);
-      gameBoard.appendChild(hex);
-    }
-  }
-
-  // Handle hexagon click
-  function handleHexClick(event) {
-    const hex = event.target;
-    console.log(`Hex clicked at (${hex.dataset.x}, ${hex.dataset.y})`);
-
-    // Example action: build a defensive structure
-    buildFeature(hex, 'DEFENSIVE');
-  }
-
-  // Function to build a feature on a hex
-  function buildFeature(hex, featureType) {
-    if (!hex.dataset.feature) {
-      hex.dataset.feature = featureType;
-      hex.classList.add('feature');
-      player.features.push({ type: featureType, position: { x: hex.dataset.x, y: hex.dataset.y } });
-      hex.innerHTML = `<p>${FEATURES[featureType].name}</p>`;
-    } else {
-      alert("Cannot build here.");
-    }
-  }
-
-  // Start the game
-  window.onload = function() {
-    createGameBoard();
-  };
-</script>
