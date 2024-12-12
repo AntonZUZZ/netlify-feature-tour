@@ -87,23 +87,17 @@
 
     // Активация ячейки и добавление соседей
     function activateCell(x, y) {
-      if (activeCells.has(`${x},${y}`)) {
-        console.log(`Ячейка (${x}, ${y}) уже активна.`);
-        return;
+      if (!activeCells.has(`${x},${y}`)) {
+        console.log(`Активация ячейки (${x}, ${y}).`);
+        activeCells.add(`${x},${y}`);
+        const currentCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+        if (currentCell) {
+          currentCell.classList.add('active');
+          currentCell.textContent = "Active";
+        }
       }
 
-      // Лог активации
-      console.log(`Активация ячейки (${x}, ${y}).`);
-
-      // Добавляем ячейку в активные
-      activeCells.add(`${x},${y}`);
-      const currentCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-      if (currentCell) {
-        currentCell.classList.add('active');
-        currentCell.textContent = "Active";
-      }
-
-      // Добавляем соседние ячейки
+      // Добавляем соседние ячейки (если их ещё нет)
       neighborOffsets.forEach(offset => {
         const newX = x + offset.x;
         const newY = y + offset.y;
