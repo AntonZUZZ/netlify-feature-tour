@@ -1,151 +1,118 @@
----
-import Layout from '../components/layout.astro';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hex Expansion Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
 
-/* 
-Пример структуры данных игры (можно перенести в отдельный скрипт):
-Далее вы можете использовать JS для рендера состояния.
-Пример: 
-const gridState = [
-  { type: 'start', armies: [{power: 1}], features: ['economic', 'defensive', 'military'] },
-  { type: 'empty', armies: [], features: [] },
-  ...
-];
+    .hex-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(9, 60px); /* Ширина сетки */
+      grid-auto-rows: 52px; /* Высота строки */
+      gap: 0; /* Без промежутков */
+      justify-content: center;
+    }
 
-В дальнейшем можно динамически генерировать HTML или использовать реактивные фреймворки.
-*/
----
+    .hex {
+      position: relative;
+      width: 60px;
+      height: 52px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      clip-path: polygon(
+        50% 0%,
+        100% 25%,
+        100% 75%,
+        50% 100%,
+        0% 75%,
+        0% 25%
+      );
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
 
-<style>
-  :root {
-    --light: #f5f5f5;
-    --white: #ffffff;
-    --lightBorder: #e0e0e0;
-    --card-radius: 8px;
-  }
+    .hex:hover {
+      background-color: #e0e0e0;
+    }
 
-  .hex-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 60px); /* Количество колонок */
-    gap: 0; /* Убираем промежутки между гексами */
-    justify-content: center;
-    position: relative;
-    background: var(--light);
-    margin-top: 3rem;
-    padding: 5rem 5vw;
-  }
+    .hex.active {
+      background-color: #cce5ff;
+      border: 2px solid #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div id="hexGrid" class="hex-grid">
+    <!-- Изначальный центральный гекс -->
+    <div class="hex active" data-x="0" data-y="0"></div>
+  </div>
 
-  .hex-grid .hex {
-    position: relative;
-    width: 60px;
-    height: 52px;
-    background-color: var(--white);
-    border: 1px solid var(--lightBorder);
-    clip-path: polygon(
-      50% 0%,
-      100% 25%,
-      100% 75%,
-      50% 100%,
-      0% 75%,
-      0% 25%
-    );
-    transition: box-shadow 0.2s ease;
-  }
+  <script>
+    // Инициализация сетки и логики
+    const hexGrid = document.getElementById('hexGrid');
 
-  .hex-grid .hex:hover {
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgb(14 30 37 / 12%);
-  }
+    // Смещения для соседних гексов
+    const neighborOffsets = [
+      { x: 0, y: -1 },  // Верхний
+      { x: 1, y: -1 },  // Верхний правый
+      { x: 1, y: 0 },   // Правый
+      { x: 0, y: 1 },   // Нижний
+      { x: -1, y: 1 },  // Нижний левый
+      { x: -1, y: 0 },  // Левый
+    ];
 
-  /* Сдвиг каждой второй строки */
-  .hex-grid .row:nth-child(even) {
-    transform: translateX(30px); /* Смещаем гексы на полгекса */
-    transform: translateX(30px);
-  }
+    // Храним состояние сетки (координаты активных гексов)
+    const activeHexes = new Set(["0,0"]);
 
-  /* Стартовый гекс */
-  .hex.start {
-    background-color: #c0e8ff; /* Условный цвет для стартовой клетки */
-    border: 2px solid #0077cc;
-  }
+    // Добавление нового гекса
+    function addHex(x, y) {
+      // Если гекс уже существует, ничего не делаем
+      if (activeHexes.has(`${x},${y}`)) return;
 
-  /* Пример состояния стартового гекса:
-     Отличается цветом или рамкой, так как там сразу все три особенности */
-  .hex.start {
-    background-color: #c0e8ff; /* условный цвет для стартовой клетки */
-    border: 2px solid #0077cc;
-  }
+      // Создаем новый элемент
+      const newHex = document.createElement('div');
+      newHex.classList.add('hex');
+      newHex.dataset.x = x;
+      newHex.dataset.y = y;
 
-  .hex:hover {
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgb(14 30 37 / 12%);
-  }
+      // Добавляем обработчик клика
+      newHex.addEventListener('click', () => expandHex(x, y));
 
-  /* Можно добавить индикаторы особенностей и армий внутри гекса, 
-     например, через pseudo-элементы или вложенные span */
-  .hex .army {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: #333;
-  }
+      // Добавляем гекс в сетку
+      hexGrid.appendChild(newHex);
+    }
 
-  .hex.economic {
-    /* например, зеленоватый оттенок */
-    background-color: #d8ffd8;
-  }
+    // Расширение сетки при клике
+    function expandHex(x, y) {
+      // Если гекс уже активен, ничего не делаем
+      if (activeHexes.has(`${x},${y}`)) return;
 
-  .hex.defensive {
-    /* например, сероватый оттенок */
-    background-color: #f0f0f0;
-  }
+      // Активируем текущий гекс
+      activeHexes.add(`${x},${y}`);
+      const currentHex = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+      if (currentHex) currentHex.classList.add('active');
 
-  .hex.military {
-    /* например, розоватый оттенок */
-    background-color: #ffd8d8;
-  }
+      // Добавляем соседние гексы
+      neighborOffsets.forEach(offset => {
+        const newX = x + offset.x;
+        const newY = y + offset.y;
+        addHex(newX, newY);
+      });
+    }
 
-</style>
-
-<Layout
-  title="City Building Game"
-  description="Управляйте городом на гексагональной сетке. Создавайте особенности, армии и расширяйтесь."
-  home
->
-  <!-- Тут вы можете динамически генерировать гексы на основе состояния -->
-  <main class="hex-grid">
-    <!-- Первая строка -->
-    <div class="hex start"></div>
-    <div class="hex economic"></div>
-    <div class="hex defensive"></div>
-    <div class="hex military"></div>
-    <div class="hex"></div>
-  
-    <!-- Вторая строка (сдвинута на 30px) -->
-    <div class="row">
-      <div class="hex"></div>
-      <div class="hex economic"></div>
-      <div class="hex military"></div>
-      <div class="hex defensive"></div>
-    </div>
-  
-    <!-- Третья строка -->
-    <div class="hex"></div>
-    <div class="hex economic"></div>
-    <div class="hex defensive"></div>
-    <div class="hex"></div>
-    <div class="hex military"></div>
-  
-    <!-- Четвертая строка (сдвинута на 30px) -->
-    <div class="row">
-      <div class="hex start"></div>
-      <div class="hex economic"></div>
-      <div class="hex"></div>
-      <div class="hex defensive"></div>
-      <div class="hex"></div>
-    </div>
-  </main>
-  
-</Layout>
+    // Инициализация (добавление клика для стартового гекса)
+    document.querySelector('.hex.active').addEventListener('click', () => expandHex(0, 0));
+  </script>
+</body>
+</html>
