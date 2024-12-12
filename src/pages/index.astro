@@ -25,18 +25,16 @@ const gridState = [
 
   .hex-grid {
     display: grid;
-    /* Ширину и количество можно настроить под реальный размер карты */
-    grid-template-columns: repeat(5, 60px);
-    gap: 5px;
+    grid-template-columns: repeat(5, 60px); /* Количество колонок */
+    gap: 0; /* Убираем промежутки между гексами */
     justify-content: center;
+    position: relative;
     background: var(--light);
     margin-top: 3rem;
     padding: 5rem 5vw;
-    width: 100vw;
-    overflow: visible;
   }
 
-  .hex {
+  .hex-grid .hex {
     position: relative;
     width: 60px;
     height: 52px;
@@ -52,6 +50,23 @@ const gridState = [
     );
     transition: box-shadow 0.2s ease;
   }
+
+  .hex-grid .hex:hover {
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgb(14 30 37 / 12%);
+  }
+
+  /* Сдвиг каждой второй строки */
+  .hex-grid .row:nth-child(even) {
+    transform: translateX(30px); /* Смещаем гексы на полгекса */
+  }
+
+  /* Стартовый гекс */
+  .hex.start {
+    background-color: #c0e8ff; /* Условный цвет для стартовой клетки */
+    border: 2px solid #0077cc;
+  }
+
 
   /* Пример состояния стартового гекса:
      Отличается цветом или рамкой, так как там сразу все три особенности */
@@ -100,20 +115,37 @@ const gridState = [
   home
 >
   <!-- Тут вы можете динамически генерировать гексы на основе состояния -->
-  <main class="hex-grid" client:only>
-    <!-- Пример статической раскладки для демонстрации -->
-    <div class="hex start">
-      <div class="army">A:1</div>
-    </div>
+  <main class="hex-grid">
+    <!-- Первая строка -->
+    <div class="hex start"></div>
     <div class="hex economic"></div>
     <div class="hex defensive"></div>
     <div class="hex military"></div>
     <div class="hex"></div>
+  
+    <!-- Вторая строка (сдвинута на 30px) -->
+    <div class="row">
+      <div class="hex"></div>
+      <div class="hex economic"></div>
+      <div class="hex military"></div>
+      <div class="hex defensive"></div>
+    </div>
+  
+    <!-- Третья строка -->
     <div class="hex"></div>
+    <div class="hex economic"></div>
+    <div class="hex defensive"></div>
     <div class="hex"></div>
-    <div class="hex"></div>
-    <div class="hex"></div>
-    <div class="hex"></div>
-    <!-- И так далее... Можно сгенерировать нужный размер карты -->
+    <div class="hex military"></div>
+  
+    <!-- Четвертая строка (сдвинута на 30px) -->
+    <div class="row">
+      <div class="hex start"></div>
+      <div class="hex economic"></div>
+      <div class="hex"></div>
+      <div class="hex defensive"></div>
+      <div class="hex"></div>
+    </div>
   </main>
+  
 </Layout>
