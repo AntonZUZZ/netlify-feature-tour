@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hex Expansion Game</title>
+  <title>Square Expansion Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,104 +15,99 @@
       background-color: #f5f5f5;
     }
 
-    .hex-grid {
-      position: relative;
+    .grid {
       display: grid;
-      grid-template-columns: repeat(9, 60px); /* Ширина сетки */
-      grid-auto-rows: 52px; /* Высота строки */
-      gap: 0; /* Без промежутков */
-      justify-content: center;
+      grid-template-columns: repeat(9, 50px); /* Начальная ширина сетки */
+      grid-auto-rows: 50px; /* Высота строки */
+      gap: 1px;
+      background-color: #ccc;
     }
 
-    .hex {
-      position: relative;
-      width: 60px;
-      height: 52px;
+    .cell {
+      width: 50px;
+      height: 50px;
       background-color: #fff;
       border: 1px solid #ccc;
-      clip-path: polygon(
-        50% 0%,
-        100% 25%,
-        100% 75%,
-        50% 100%,
-        0% 75%,
-        0% 25%
-      );
-      transition: background-color 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
       cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .hex:hover {
-      background-color: #e0e0e0;
-    }
-
-    .hex.active {
+    .cell.active {
       background-color: #cce5ff;
-      border: 2px solid #007bff;
+      border-color: #007bff;
+    }
+
+    .cell:hover {
+      background-color: #e0e0e0;
     }
   </style>
 </head>
 <body>
-  <div id="hexGrid" class="hex-grid">
-    <!-- Изначальный центральный гекс -->
-    <div class="hex active" data-x="0" data-y="0"></div>
+  <div id="grid" class="grid">
+    <!-- Изначальная центральная ячейка -->
+    <div class="cell active" data-x="0" data-y="0">Start</div>
   </div>
 
   <script>
-    // Инициализация сетки и логики
-    const hexGrid = document.getElementById('hexGrid');
+    const grid = document.getElementById('grid');
 
-    // Смещения для соседних гексов
+    // Храним активные ячейки по координатам
+    const activeCells = new Set(["0,0"]);
+
+    // Смещения для соседей (по квадратной сетке)
     const neighborOffsets = [
-      { x: 0, y: -1 },  // Верхний
-      { x: 1, y: -1 },  // Верхний правый
-      { x: 1, y: 0 },   // Правый
-      { x: 0, y: 1 },   // Нижний
-      { x: -1, y: 1 },  // Нижний левый
-      { x: -1, y: 0 },  // Левый
+      { x: 0, y: -1 },  // Верх
+      { x: 1, y: 0 },   // Право
+      { x: 0, y: 1 },   // Низ
+      { x: -1, y: 0 },  // Лево
     ];
 
-    // Храним состояние сетки (координаты активных гексов)
-    const activeHexes = new Set(["0,0"]);
+    // Добавление новой ячейки
+    function addCell(x, y) {
+      // Если ячейка уже существует, ничего не делаем
+      if (activeCells.has(`${x},${y}`)) return;
 
-    // Добавление нового гекса
-    function addHex(x, y) {
-      // Если гекс уже существует, ничего не делаем
-      if (activeHexes.has(`${x},${y}`)) return;
-
-      // Создаем новый элемент
-      const newHex = document.createElement('div');
-      newHex.classList.add('hex');
-      newHex.dataset.x = x;
-      newHex.dataset.y = y;
+      // Создаем новую ячейку
+      const newCell = document.createElement('div');
+      newCell.classList.add('cell');
+      newCell.dataset.x = x;
+      newCell.dataset.y = y;
 
       // Добавляем обработчик клика
-      newHex.addEventListener('click', () => expandHex(x, y));
+      newCell.addEventListener('click', () => activateCell(x, y));
 
-      // Добавляем гекс в сетку
-      hexGrid.appendChild(newHex);
+      // Добавляем в сетку
+      grid.appendChild(newCell);
     }
 
-    // Расширение сетки при клике
-    function expandHex(x, y) {
-      // Если гекс уже активен, ничего не делаем
-      if (activeHexes.has(`${x},${y}`)) return;
+    // Активация ячейки и добавление соседей
+    function activateCell(x, y) {
+      // Если ячейка уже активна, ничего не делаем
+      if (activeCells.has(`${x},${y}`)) return;
 
-      // Активируем текущий гекс
-      activeHexes.add(`${x},${y}`);
-      const currentHex = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-      if (currentHex) currentHex.classList.add('active');
+      // Добавляем ячейку в активные
+      activeCells.add(`${x},${y}`);
+      const currentCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+      if (currentCell) {
+        currentCell.classList.add('active');
+        currentCell.textContent = "Active";
+      }
 
-      // Добавляем соседние гексы
+      // Добавляем соседние ячейки
       neighborOffsets.forEach(offset => {
         const newX = x + offset.x;
         const newY = y + offset.y;
-        addHex(newX, newY);
+        addCell(newX, newY);
       });
     }
 
-    // Инициализация (добавление клика для стартового гекса)
-    document.querySelector('.hex.active').addEventListener('click', () => expandHex(0, 0));
+    // Инициализация начальной ячейки
+    document.querySelector('.cell.active').addEventListener('click', () => activateCell(0, 0));
   </script>
 </body>
 </html>
