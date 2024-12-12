@@ -87,8 +87,13 @@
 
     // Активация ячейки и добавление соседей
     function activateCell(x, y) {
-      // Если ячейка уже активна, ничего не делаем
-      if (activeCells.has(`${x},${y}`)) return;
+      if (activeCells.has(`${x},${y}`)) {
+        console.log(`Ячейка (${x}, ${y}) уже активна.`);
+        return;
+      }
+
+      // Лог активации
+      console.log(`Активация ячейки (${x}, ${y}).`);
 
       // Добавляем ячейку в активные
       activeCells.add(`${x},${y}`);
