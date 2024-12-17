@@ -1,112 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Square Expansion Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f5f5f5;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(9, 50px); /* Начальная ширина сетки */
-      grid-auto-rows: 50px; /* Высота строки */
-      gap: 1px;
-      background-color: #ccc;
-    }
-
-    .cell {
-      width: 50px;
-      height: 50px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .cell.active {
-      background-color: #cce5ff;
-      border-color: #007bff;
-    }
-
-    .cell:hover {
-      background-color: #e0e0e0;
-    }
-  </style>
+    <title>Game map</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="grid" class="grid">
-    <!-- Изначальная центральная ячейка -->
-    <div class="cell active" data-x="0" data-y="0">Start</div>
-  </div>
+    <h1>Game map</h1>
+    <div id="map"></div>
+    <button id="viewModeButton">Switch to View Mode</button>
 
-  <script>
-    const grid = document.getElementById('grid');
+    <div id="controls">
+        <label for="cellType">Terrain: </label>
+        <select id="cellType">
+            <option value="empty">Empty</option>
+            <option value="mountain">Mountain</option>
+            <option value="hill">Hill</option>
+            <option value="plain">Plain</option>
+            <option value="swamp">Swamp</option>
+            <option value="water">Water</option>
+            <option value="forest">Forest</option>
+            <option value="sea">Sea</option>
+        </select>
+        <label for="featureSelect">Feature: </label>
+        <select id="featureSelect">
+            <option value="">None</option>
+            <option value="🏙️">City</option>
+            <option value="ГГ">City2</option>
+            <option value="🏡">Village</option>
+            <option value="🏰">Fort</option>
+            <option value="⛩️">Ruins</option>
+        </select>
+        <input type="text" id="symbolInput" maxlength="1">
+        <button id="editModeButton">Switch to Description Mode</button> </br>
+        <button id="saveButton">Save Map</button>
+        <button id="loadButton">Load Map</button> </br>
+        <button id="addRowButton">Add Row (End)</button>
+        <button id="addRowStartButton">Add Row (Start)</button>
+        <button id="addColButton">Add Column (End)</button>
+        <button id="addColStartButton">Add Column (Start)</button></br>
+        <input type="file" id="fileInput" accept=".json">
+        <div id="tooltipForm" class="hidden">
+            <form id="tooltipEditor">
+                <label for="tooltipInput">Edit Tooltip:</label><br>
+                <textarea id="tooltipInput" rows="4" cols="30" placeholder="Enter description..."></textarea><br>
+                <button type="submit">Save</button>
+                <button type="button" id="cancelButton">Cancel</button>
+            </form>
+        </div>
+        <div id="customTooltip" class="hidden"></div>
+    </div>
+    <div id="legend">
+        <h3>Legend</h3>
+        <div><span style="background-color: #ffffff;"></span>Empty</div>
+        <div><span style="background-color: #e6602b;"></span>Mountain</div>
+        <div><span style="background-color: #fcc02e;"></span>Hill</div>
+        <div><span style="background-color: #fcd971;"></span>Plain</div>
+        <div><span style="background-color: #aec55d;"></span>Swamp</div>
+        <div><span style="background-color: #3399ff;"></span>Water</div>
+        <div><span style="background-color: #228b22;"></span>Forest</div>
+        <div><span style="background-color: #005f99;"></span>Sea</div>
+    </div>
+    <script src="script.js"></script>
 
-    // Храним активные ячейки по координатам
-    const activeCells = new Set(["0,0"]);
-
-    // Смещения для соседей (по квадратной сетке)
-    const neighborOffsets = [
-      { x: 0, y: -1 },  // Верх
-      { x: 1, y: 0 },   // Право
-      { x: 0, y: 1 },   // Низ
-      { x: -1, y: 0 },  // Лево
-    ];
-
-    // Добавление новой ячейки
-    function addCell(x, y) {
-      // Если ячейка уже существует, ничего не делаем
-      if (activeCells.has(`${x},${y}`)) return;
-
-      // Создаем новую ячейку
-      const newCell = document.createElement('div');
-      newCell.classList.add('cell');
-      newCell.dataset.x = x;
-      newCell.dataset.y = y;
-
-      // Добавляем обработчик клика
-      newCell.addEventListener('click', () => activateCell(x, y));
-
-      // Добавляем в сетку
-      grid.appendChild(newCell);
-    }
-
-    // Активация ячейки и добавление соседей
-    function activateCell(x, y) {
-      if (!activeCells.has(`${x},${y}`)) {
-        console.log(`Активация ячейки (${x}, ${y}).`);
-        activeCells.add(`${x},${y}`);
-        const currentCell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-        if (currentCell) {
-          currentCell.classList.add('active');
-          currentCell.textContent = "Active";
-        }
-      }
-
-      // Добавляем соседние ячейки (если их ещё нет)
-      neighborOffsets.forEach(offset => {
-        const newX = x + offset.x;
-        const newY = y + offset.y;
-        addCell(newX, newY);
-      });
-    }
-
-    // Инициализация начальной ячейки
-    document.querySelector('.cell.active').addEventListener('click', () => activateCell(0, 0));
-  </script>
 </body>
 </html>

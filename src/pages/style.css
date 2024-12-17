@@ -1,0 +1,116 @@
+body {
+    font-family: Tahoma, sans-serif;
+    margin: 20px;
+}
+#map table {
+    border-collapse: collapse;
+}
+#map td {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    position: relative;
+}
+#map td[data-type="mountain"] {
+    background-color: #e6602b;
+}
+#map td[data-type="hill"] {
+    background-color: #fcc02e;
+}
+#map td[data-type="plain"] {
+    background-color: #fcd971;
+}
+#map td[data-type="swamp"] {
+    background-color: #aec55d;
+}
+#map td[data-type="water"] {
+    background-color: #3399ff;
+}
+#map td[data-type="forest"] {
+    background-color: #228b22;
+}
+#map td[data-type="sea"] {
+    background-color: #005f99;
+}
+#map td[data-type="empty"] {
+    background-color: #ffffff;
+}
+#map td:hover {
+    outline: 2px solid #000;
+}
+#map td span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    font-weight: bold;
+    color: #000;
+}
+#controls {
+    margin-top: 20px;
+}
+#saveButton, #loadButton, #addRowButton, #addColButton, #addRowStartButton, #addColStartButton, #editModeButton {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+#saveButton:hover, #loadButton:hover, #addRowButton:hover, #addColButton:hover, #addRowStartButton:hover, #addColStartButton:hover, #editModeButton:hover {
+    background-color: #0056b3;
+}
+#fileInput {
+    display: none;
+}
+#legend {
+    margin-top: 20px;
+}
+#legend div {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+#legend div span {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    display: inline-block;
+}
+.hidden {
+    display: none;
+}
+#tooltipForm {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+#tooltipForm textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+#customTooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+}
